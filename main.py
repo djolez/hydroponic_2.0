@@ -54,7 +54,7 @@ pump = Device('pump', [
         {
             'time': Time(21, 10),
             'action': 'off'
-        },"""
+        }"""
     ])
 
 pump.enable()
