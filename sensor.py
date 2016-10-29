@@ -1,5 +1,6 @@
 import logging
 import datetime as dt
+import json
 
 import helper
 
@@ -24,6 +25,9 @@ class Sensor:
     def release(self):
         self.__mqtt_client.loop_stop()
 
+    def read(self):
+        self.__send_message({'action': 'read'})
+    
     def __on_mqtt_connect(self, client, userdata, flags, rc):
         logger.debug('{} -- MQTT connection established'.format(self))
         
@@ -31,11 +35,9 @@ class Sensor:
 
     def __on_mqtt_message(self, client, usrdata, msg):
         logger.debug('{} -- Received message -- {}'.format(self, msg.payload))
-
-    def __send_message(self, msg):
-        logger.debug('Sending message "{}" for {}'.format(msg, self.name))
-        self.__mqtt_client.publish('sensor/real/{}'.format(self.name), msg)
     
-
-
-
+    def __send_message(self, msg):
+        logger.debug('{} -- Sending message "{}"'.format(self, msg))
+        msg['entity'] = 'sensor'
+        msg['name'] = self.name
+        self.__mqtt_client.publish('{}'.format(self.parent_module_name), json.dumps(msg))

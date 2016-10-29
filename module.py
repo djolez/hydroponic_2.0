@@ -3,6 +3,7 @@ import copy
 import sys
 
 from sensor import *
+from device import *
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class Module:
 
         self.name = name
         self.sensors = []
+        self.devices = []
 
         for s in sensors:
             self.sensors.append(Sensor(s['name'], self.name))
@@ -30,6 +32,6 @@ class Module:
         logger.debug('{} -- Deleting instance'.format(self))
         
         for s in self.sensors:
-            #because __del__ is not called(there are other references left, i don't know form where)
+            #because __del__ is not called(there are other references left, i don't know from where)
             s.release()
 

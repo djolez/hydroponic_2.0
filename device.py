@@ -1,8 +1,8 @@
 import logging
 import datetime as dt
-#import serial_conn
 import atexit
 from blinker import signal
+import json
 
 from schedule import *
 from time_module import *
@@ -37,15 +37,17 @@ class Device:
         logger.debug('{} -- Received message -- {}'.format(self, msg.payload))
 
     def __send_message(self, msg):
-        logger.debug('Sending message "{}" for {}'.format(msg, self.name))
-        self.__mqtt_client.publish('device/real/{}'.format(self.name), msg)
+        logger.debug('{} -- Sending message "{}"'.format(self, msg))
+        msg['entity'] = 'device'
+        msg['name'] = self.name
+        self.__mqtt_client.publish('{}'.format(self.parent_module_name), json.dumps(msg))
 
     def on(self, args=None):
-        self.__send_message('on')
+        self.__send_message({'action': 'change_state', 'state': 'on'})
         self.on_event.send()
 
     def off(self, args=None):
-        self.__send_message('off')
+        self.__send_message({'action': 'change_state', 'state': 'off'})
         self.off_event.send()
 
 class Action:

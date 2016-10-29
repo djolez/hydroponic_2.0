@@ -13,7 +13,7 @@ def wifi_connect():
         sta_if.connect('Telecom-85285913', 'FearlessMoon-718')
         while not sta_if.isconnected():
             pass
-	webrepl.start()
+	webrepl.start(password='djole334')
     print('network config:', sta_if.ifconfig())
 	
 wifi_connect()

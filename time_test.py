@@ -6,6 +6,7 @@ import json
 from device import *
 from sensor import *
 from module import *
+from time_module import *
 import helper
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
@@ -18,7 +19,7 @@ def subscribe(client, userdata, flags, rc):
 def handle_msg(client, usrdata, msg):
     logger.debug('Client received message -- {}'.format(msg.payload))
     try:
-        data = json.loads(msg.payload)
+        data = json.loads(msg.payload.decode('utf-8'))
         if(data['action'] == 'module_on'):
             name = data['module_name']
             if(name in modules):
@@ -27,6 +28,12 @@ def handle_msg(client, usrdata, msg):
             sensors = data['sensors'] if 'sensors' in data else []
             devices = data['devices'] if 'devices' in data else []
             modules[name] = Module(name, sensors, devices)
+
+            #modules[name].devices[1].off()
+
+            a = Action('rendom', repeat=Time(second=3), callbacks=[modules[name].sensors[1].read])
+            #a.schedule()
+            
     except ValueError:
         logger.error('Failed to parse payload as json')
 
