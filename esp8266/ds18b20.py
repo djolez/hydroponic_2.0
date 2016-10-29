@@ -1,0 +1,26 @@
+import ds18x20
+import onewire
+import machine
+import time
+import logging
+
+from device import Device
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+class Ds18b20(Device):
+
+    def __init__(self, pin):
+        super().__init__(pin, Device.types['sensor'], 'ds18b20')
+        
+        self.__pin_object = machine.Pin(pin)
+        self.__ds_object = ds18x20.DS18X20(onewire.OneWire(self.__pin_object))
+        self.__ds_instance = self.__ds_object.scan()[0]
+
+    def read(self):
+        self.__ds_object.convert_temp()
+        time.sleep_ms(750)
+        res = self.__ds_object.read_temp(self.__ds_instance)
+
+        super().read_return(res)
