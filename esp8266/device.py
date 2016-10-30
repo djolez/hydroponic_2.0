@@ -1,4 +1,6 @@
 import logging
+import micropython
+micropython.alloc_emergency_exception_buf(100)
 
 import config
 import mqtt_client
@@ -32,8 +34,10 @@ class Device:
         raise NotImplementedError
 
     def read_return(self, value):
-        self.__send_msg(b"{{'action': 'result', 'value': {} }}".format(value))
+        self.__send_msg(b"{{ 'action': 'result', 'value': {} }}".format(value))
 
     def write(self):
         raise NotImplementedError
 
+    def interrupt(self, value):
+        self.__send_msg(b"{{ 'action': 'interrupt', 'value': {} }}".format(value))
