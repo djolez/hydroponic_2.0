@@ -22,7 +22,7 @@ class InputSimple(Device):
             self.__pin_object = machine.ADC(pin)
         else:
             self.__pin_object = machine.Pin(pin, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-            self.__pin_object.irq(trigger=machine.Pin.IRQ_RISING | machine.Pin.IRQ_FALLING, handler=self.change)
+            self.__pin_object.irq(trigger=trigger, handler=self.change)
 
     def change(self, v):
         helper.state_changed = self.name
