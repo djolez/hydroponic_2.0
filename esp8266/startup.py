@@ -10,7 +10,7 @@ import mqtt_client
 from ds18b20 import Ds18b20
 from output_simple import OutputSimple
 from input_simple import InputSimple
-import helper
+import common
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -20,14 +20,11 @@ def on_message(topic, msg):
     try:
         data = ujson.loads(msg)
         if(data['action'] is 'reregister'):
-            register()
+            register_module()
         elif(data['action'] is 'add'):
             devices['relay_3'] = OutputSimple(3)
-            print_mem()
         elif(data['action'] is 'remove'):
             del devices['relay_3']
-            gc.mem_free()
-            print_mem()
         elif(data['action'] is 'read'):
             devices[data['name']].read()
         elif(data['action'] is 'write'):
@@ -37,7 +34,7 @@ def on_message(topic, msg):
     except KeyError as e:
         logger.error('Message is missing field "{}"'.format(e))
 
-def register():
+def register_module():
     data = {}
     data['action'] = 'module_on'
     data['devices'] = []
@@ -49,52 +46,53 @@ def register():
     client.publish('main-dispatcher', ujson.dumps(data))
 
 def initialize_devices():
-    global devices
+    add_device(Ds18b20(10))
+    add_device(OutputSimple(3, name="relay"))
+    add_device(InputSimple(13, name='float_switch', trigger=InputSimple.trigger_type['any']))
+    add_device(InputSimple(15, 'button', trigger=InputSimple.trigger_type['off']))
 
-    devices['ds18b20_10'] = Ds18b20(10)
-    print_mem()
-    
-    #devices['relay_15'] = OutputSimple(15)
-    #print_mem()
+    d = add_device(InputSimple(0, name='poten', is_analog=True))
+    register_analog(d.name)
 
-    #add_device(InputSimple(15, 'button', helper.trigger_type['on']))
-    #add_device(InputSimple(0, 'poten', None, True))
-    
-    #import machine
-    #a = machine.Pin.IRQ_RISING | machine.Pin.IRQ_FALLING 
-    add_device(InputSimple(13, 'float_switch', helper.trigger_type['any']))
-    #add_device(InputSimple(13, 'float_switch', a))
+def register_analog(name):
+    global analog
+    analog.append(name)
 
-devices = {}
-client = None
+def read_analog():
+    global analog, devices
+
+    for device_name in analog:
+        devices[device_name].update()
 
 def add_device(d):
+    global devices
     devices[d.name] = d
+    return d
 
-def print_mem():
-    print('========================================')
-    micropython.mem_info()
-    print('========================================')
-
+#devices that change state will update a variable from common as a flag
 def check_device_changes():
-    if(helper.state_changed is not ''):
-        logger.debug('***CHANGED {}, value: {}'.format(helper.state_changed, devices[helper.state_changed].read()))
-        helper.state_changed = ''
+    for name, device_object in common.state_changed.items():
+        if(device_object is not None):
+            device_object.read()
+            common.state_changed[name] = None
 
+devices = {}
+analog = []
+client = None
 
 def main():
     global client
     client = mqtt_client.make(config.CONFIG['client_id'])
-    #client = MQTTClient(config.CONFIG['client_id'], config.CONFIG['broker'])
     client.connect()
     client.set_callback(on_message)
     client.subscribe(config.CONFIG['client_id'])
 
     initialize_devices()
-    register()
+    register_module()
 
     while True:
         client.check_msg()
+        read_analog()
         check_device_changes()
 
         #devices['poten_0'].read()

@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class Ds18b20(Device):
 
-    def __init__(self, pin):
-        super().__init__(pin, Device.types['in'], 'ds18b20')
+    def __init__(self, pin, name='ds18b20'):
+        super().__init__(pin, Device.types['in'], name)
         
         self.__pin_object = machine.Pin(pin)
         self.__ds_object = ds18x20.DS18X20(onewire.OneWire(self.__pin_object))

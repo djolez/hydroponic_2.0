@@ -10,8 +10,8 @@ class OutputSimple(Device):
 
     #is_reverse True is used for relay since
     #0 means on and 1 means off
-    def __init__(self, pin, is_reverse=False):
-        super().__init__(pin, Device.types['out'], 'relay')
+    def __init__(self, pin, name='output_simple', is_reverse=False):
+        super().__init__(pin, Device.types['out'], name)
         
         self.__pin_object = machine.Pin(pin, machine.Pin.OUT)
         self.is_reverse = is_reverse
