@@ -15,11 +15,13 @@ class OutputSimple(Device):
         
         self.__pin_object = machine.Pin(pin, machine.Pin.OUT)
         self.is_reverse = is_reverse
+        self.last_value = None
 
-    def read(self):
-        res = self.__pin_object.value()
+    def read(self, send_response=True):
+        self.last_value = self.__pin_object.value()
 
-        super().read_return(res)
+        if(send_response):
+            super().read_response()
     
     def write(self, value):
         write_value = -1

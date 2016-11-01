@@ -17,11 +17,13 @@ class Ds18b20(Device):
         self.__pin_object = machine.Pin(pin)
         self.__ds_object = ds18x20.DS18X20(onewire.OneWire(self.__pin_object))
         self.__ds_instance = self.__ds_object.scan()[0]
+        self.last_value = None
 
-    def read(self):
+    def read(self, send_response=True):
         logger.debug('{} -- Trying to read value'.format(self))
         self.__ds_object.convert_temp()
         time.sleep_ms(750)
-        res = self.__ds_object.read_temp(self.__ds_instance)
-
-        super().read_return(res)
+        self.last_value = self.__ds_object.read_temp(self.__ds_instance)
+        
+        if(send_response):
+            super().read_response()
