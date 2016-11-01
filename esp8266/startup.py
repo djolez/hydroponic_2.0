@@ -21,10 +21,6 @@ def on_message(topic, msg):
         data = ujson.loads(msg)
         if(data['action'] is 'reregister'):
             register_module()
-        elif(data['action'] is 'add'):
-            devices['relay_3'] = OutputSimple(3)
-        elif(data['action'] is 'remove'):
-            del devices['relay_3']
         elif(data['action'] is 'read'):
             devices[data['name']].read()
         elif(data['action'] is 'write'):
@@ -36,14 +32,13 @@ def on_message(topic, msg):
 
 def register_module():
     data = {}
-    data['action'] = 'module_on'
     data['devices'] = []
     data['module_name'] = config.CONFIG['client_id']
 
     for name, device_object in devices.items():
         data['devices'].append({'name': name, 'device_type': device_object.device_type})
 
-    client.publish('main-dispatcher', ujson.dumps(data))
+    client.publish('main-dispatcher/register', ujson.dumps(data))
 
 def initialize_devices():
     add_device(Ds18b20(10))
@@ -73,7 +68,7 @@ def add_device(d):
 def check_device_changes():
     for name, device_object in common.state_changed.items():
         if(device_object is not None):
-            device_object.read()
+            device_object.interrupt()
             common.state_changed[name] = None
 
 devices = {}

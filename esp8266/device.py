@@ -26,18 +26,18 @@ class Device:
         self.__mqtt_topic = '{}/device/{}'.format(config.CONFIG['client_id'], self.name)
         self.__mqtt_client = mqtt_client.make(self.__mqtt_topic)
 
-    def __send_msg(self, payload):
+    def __send_msg(self, subtopic, payload):
         logger.debug('{} -- Sending msg: {}'.format(self, payload))
-        self.__mqtt_client.publish(self.__mqtt_topic, payload)
+        self.__mqtt_client.publish('{}/{}'.format(self.__mqtt_topic, subtopic), payload)
 
     def read(self):
         raise NotImplementedError
 
-    def read_return(self, value):
-        self.__send_msg(b"{{ 'action': 'result', 'value': {} }}".format(value))
+    def read_response(self):
+        self.__send_msg('read-response', b"{{ 'value': {} }}".format(self.last_value))
 
     def write(self):
         raise NotImplementedError
 
-    def interrupt(self, value):
-        self.__send_msg(b"{{ 'action': 'interrupt', 'value': {} }}".format(value))
+    def interrupt(self):
+        self.__send_msg('interrupt', b"{{ 'value': {} }}".format(self.last_value))

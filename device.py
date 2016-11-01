@@ -28,13 +28,21 @@ class Device:
     def __str__(self):
         return '[name: {}]'.format(self.name)
     
+    def read_response(self, client, usrdata, msg):
+        logger.debug('{} -- read_response -- {}'.format(self, msg.payload))
+
+    def interrupt(self, client, usrdata, msg):
+        logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
+    
     def __on_mqtt_connect(self, client, userdata, flags, rc):
         logger.debug('{} -- MQTT connection established'.format(self))
+        topic = '{}/device/{}'.format(self.parent_module_name, self.name) 
+        client.subscribe(topic + '/#')
+        client.message_callback_add(topic + '/read-response/#', self.read_response)
+        client.message_callback_add(topic + '/interrupt/#', self.interrupt)
         
-        client.subscribe('{}/device/{}/#'.format(self.parent_module_name, self.name))
-
     def __on_mqtt_message(self, client, usrdata, msg):
-        logger.debug('{} -- Received message -- {}'.format(self, msg.payload))
+        logger.debug('{} -- Received message -- {}'.format(self, msg.topic))
 
     def __send_message(self, msg):
         logger.debug('{} -- Sending message "{}"'.format(self, msg))
@@ -49,6 +57,9 @@ class Device:
     def off(self, args=None):
         self.__send_message({'action': 'change_state', 'state': 'off'})
         self.off_event.send()
+
+    def close_connection(self):
+        self.__mqtt_client.disconnect()
 
 class Action:
 

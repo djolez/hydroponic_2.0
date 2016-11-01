@@ -3,8 +3,6 @@ from time import sleep
 import sys
 import json
 
-from device import *
-from sensor import *
 from module import *
 from time_module import *
 import helper
@@ -15,31 +13,30 @@ logger = logging.getLogger(__name__)
 def subscribe(client, userdata, flags, rc):
     logger.debug('Client connected')
     client.subscribe('main-dispatcher/#')
+    client.message_callback_add('main-dispatcher/register', on_module_register)
 
-def handle_msg(client, usrdata, msg):
-    logger.debug('Client received message -- {}'.format(msg.payload))
+def on_module_register(client, usrdata, msg):
+    logger.debug('on_module_register -- {}'.format(msg.payload))
     try:
         data = json.loads(msg.payload.decode('utf-8'))
-        if(data['action'] == 'module_on'):
-            name = data['module_name']
-            if(name in modules):
-                del modules[name]
-            
-            sensors = data['sensors'] if 'sensors' in data else []
-            devices = data['devices'] if 'devices' in data else []
-            modules[name] = Module(name, sensors, devices)
+        name = data['module_name']
+        if(name in modules):
+            del modules[name]
+        
+        devices = data['devices'] if 'devices' in data else []
+        modules[name] = Module(name, devices)
 
-            #modules[name].devices[1].off()
+        #modules[name].devices[1].off()
 
-            a = Action('rendom', repeat=Time(second=3), callbacks=[modules[name].sensors[1].read])
-            #a.schedule()
+        #a = Action('rendom', repeat=Time(second=3), callbacks=[modules[name].sensors[1].read])
+        #a.schedule()
             
     except ValueError:
         logger.error('Failed to parse payload as json')
 
 modules ={}
 
-mqtt_client = helper.make_mqtt_client(subscribe, handle_msg)
+mqtt_client = helper.make_mqtt_client(subscribe, on_module_register)
 
 """pump = Device('pump')
 valve1 = Device('valve1')

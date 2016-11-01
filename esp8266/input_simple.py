@@ -22,11 +22,11 @@ class InputSimple(Device):
         super().__init__(pin, Device.types['in'], name)
         self.is_analog = is_analog
         common.state_changed[self.name] = None
+        self.last_value = None
 
         if(is_analog):
             self.__pin_object = machine.ADC(pin)
             self.read_function = self.__pin_object.read
-            self.old_value = None
             '''determines the offset needed to trigger an interrupt'''
             self.resolution = resolution if resolution else 10
         else:
@@ -35,6 +35,7 @@ class InputSimple(Device):
             self.read_function = self.__pin_object.value
 
     def change(self, v):
+        self.read(False)
         common.state_changed[self.name] = self
 
     '''
@@ -42,19 +43,20 @@ class InputSimple(Device):
         it should should be called from main loop
     '''
     def update(self):
-        new_value = self.read(False)
-        if(self.old_value is None):
-            self.old_value = new_value
+        old_value = self.last_value
+        self.read(False)
+        if(old_value is None):
+            old_value = self.last_value
 
-        if(abs(self.old_value - new_value) >= self.resolution):
-            self.old_value = new_value
-            self.change(new_value)
-        
-    def read(self, send_msg=True):
+        if(abs(old_value - self.last_value) >= self.resolution):
+            self.change(self.last_value)
+    
+    def read(self, send_response=True):
         value = self.read_function()
-        
-        if(send_msg):
-            self.read_return(value)
+        self.last_value = value
+
+        if(send_response):
+            self.read_response()
         return value
 
 

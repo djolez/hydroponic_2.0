@@ -9,19 +9,13 @@ logger = logging.getLogger(__name__)
 
 class Module:
 
-    def __init__(self, name, sensors=None, devices=None):
-        if(sensors is None):
-            sensors = []
+    def __init__(self, name, devices):
         if(devices is None):
             devices = []
 
         self.name = name
-        self.sensors = []
         self.devices = []
 
-        for s in sensors:
-            self.sensors.append(Sensor(s['name'], self.name))
-        
         for d in devices:
             self.devices.append(Device(d['name'], d['device_type'], self.name))
 
@@ -30,8 +24,6 @@ class Module:
 
     def __del__(self):
         logger.debug('{} -- Deleting instance'.format(self))
-        
-        for s in self.sensors:
-            #because __del__ is not called(there are other references left, i don't know from where)
-            s.release()
 
+        for d in self.devices:
+            d.close_connection()
