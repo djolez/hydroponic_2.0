@@ -14,10 +14,10 @@ class Module:
             devices = []
 
         self.name = name
-        self.devices = []
+        self.devices = {}
 
         for d in devices:
-            self.devices.append(Device(d['name'], d['device_type'], self.name))
+            self.add_device(Device(d['name'], d['device_type'], self.name))
 
     def __str__(self):
         return '[name: {}]'.format(self.name)
@@ -27,3 +27,6 @@ class Module:
 
         for d in self.devices:
             d.close_connection()
+
+    def add_device(self, d):
+        self.devices[d.name] = d

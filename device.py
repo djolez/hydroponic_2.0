@@ -12,15 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 class Device:
+    types = { 'in': 1, 'out': 2 }
 
     def __init__(self, name, device_type, parent_module_name): 
         self.name = name
         self.device_type = device_type
         self.parent_module_name = parent_module_name
-        #used for subscribing to device on/off actions
+        '''used for subscribing to device events'''
         self.on_event = signal(self.name + '_on')
         self.off_event = signal(self.name + '_off')
-        
+        if(device_type == Device.types['in']):
+            self.interrupt_event = signal(self.name + '_interrupt')
+
         self.__mqtt_client = helper.make_mqtt_client(self.__on_mqtt_connect, self.__on_mqtt_message)
 
         logger.debug('{} -- Initialized'.format(self)) 
@@ -33,7 +36,8 @@ class Device:
 
     def interrupt(self, client, usrdata, msg):
         logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
-    
+        self.interrupt_event.send()
+
     def __on_mqtt_connect(self, client, userdata, flags, rc):
         logger.debug('{} -- MQTT connection established'.format(self))
         topic = '{}/device/{}'.format(self.parent_module_name, self.name) 
@@ -46,16 +50,15 @@ class Device:
 
     def __send_message(self, msg):
         logger.debug('{} -- Sending message "{}"'.format(self, msg))
-        msg['entity'] = 'device'
         msg['name'] = self.name
         self.__mqtt_client.publish('{}'.format(self.parent_module_name), json.dumps(msg))
 
     def on(self, args=None):
-        self.__send_message({'action': 'change_state', 'state': 'on'})
+        self.__send_message({'action': 'write', 'value': 'on'})
         self.on_event.send()
 
     def off(self, args=None):
-        self.__send_message({'action': 'change_state', 'state': 'off'})
+        self.__send_message({'action': 'write', 'value': 'off'})
         self.off_event.send()
 
     def close_connection(self):
@@ -64,11 +67,11 @@ class Device:
 class Action:
 
     def __init__(self, name, time=None, repeat=None, callbacks=[], force_execute=False):
-        """
+        '''
             By setting the time attribute action is executed every repeat period
 
             By setting only the repeat attribute action is executed every n days/hours/minutes/seconds
-        """
+        '''
         self.name = name
         self.time = time
         self.repeat = repeat
