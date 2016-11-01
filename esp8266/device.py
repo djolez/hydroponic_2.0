@@ -1,4 +1,5 @@
 import logging
+import ujson
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
@@ -28,16 +29,16 @@ class Device:
 
     def __send_msg(self, subtopic, payload):
         logger.debug('{} -- Sending msg: {}'.format(self, payload))
-        self.__mqtt_client.publish('{}/{}'.format(self.__mqtt_topic, subtopic), payload)
+        self.__mqtt_client.publish('{}/{}'.format(self.__mqtt_topic, subtopic), ujson.dumps(payload))
 
     def read(self):
         raise NotImplementedError
 
     def read_response(self):
-        self.__send_msg('read-response', b"{{ 'value': {} }}".format(self.last_value))
+        self.__send_msg('read-response', {'value': self.last_value})
 
     def write(self):
         raise NotImplementedError
 
     def interrupt(self):
-        self.__send_msg('interrupt', b"{{ 'value': {} }}".format(self.last_value))
+        self.__send_msg('interrupt', {'value': self.last_value})
