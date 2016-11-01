@@ -1,92 +1,85 @@
-from device import *
-import datetime as dt
 import logging
+from time import sleep
 import sys
-import camera
+import json
 
-logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(name)s - %(levelname)s\n   %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
+from module import *
+from time_module import *
+import helper
+
+logging.basicConfig(level = logging.DEBUG, format='%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
 logger = logging.getLogger(__name__)
 
-#if(len(sys.argv) == 1):
-#    logger.error('Serial port arg not found, stopping')
-#    raise SystemExit(0)
+def subscribe(client, userdata, flags, rc):
+    logger.debug('Client connected')
+    client.subscribe('main-dispatcher/#')
+    client.message_callback_add('main-dispatcher/register', on_module_register)
 
-#serial_conn = serial.Serial('/dev/{}'.format(sys.argv[1]), 9600)
-
-on = dt.datetime.now() + dt.timedelta(seconds=5)
-off = on + dt.timedelta(minutes=10)
-
-on_a = off + dt.timedelta(seconds=5)
-off_a = on_a + dt.timedelta(seconds=10)
-
-
-
-pump = Device('pump', [
-        Action((7, 30), 'on'),
-        Action((7, 40), 'off'),
+def on_module_register(client, usrdata, msg):
+    logger.debug('on_module_register -- {}'.format(msg.payload))
+    try:
+        data = json.loads(msg.payload.decode('utf-8'))
+        name = data['module_name']
+        if(name in modules):
+            del modules[name]
         
-        Action((14, 0), 'on'),
-        Action((14, 10), 'off'),
+        devices = data['devices'] if 'devices' in data else []
+        modules[name] = Module(name, devices)
+
+        #modules[name].devices[1].off()
+
+        #a = Action('toggle', repeat=Time(second=3), callbacks=[toggle_relay])
+        #a.schedule()
         
-        Action((21, 0), 'on'),
-        Action((21, 10), 'off'),
+        modules['esp8266'].devices['float_switch_13'].interrupt_event.connect(toggle_relay)
 
-        """{
-            'time': Time(7, 30),
-            'action': 'on'
-        },
-        {
-            'time': Time(7, 40),
-            'action': 'off'
-        },
-        {
-            'time': Time(14, 0),
-            'action': 'on'
-        },
-        {
-            'time': Time(14, 10),
-            'action': 'off'
-        },
-        {
-            'time': Time(21, 0),
-            'action': 'on'
-        },
-        {
-            'time': Time(21, 10),
-            'action': 'off'
-        }"""
-    ])
+    except ValueError:
+        logger.error('Failed to parse payload as json')
 
-pump.enable()
-
-light = Device('light', [
-        Action((7, 0), 'on', True),
-        Action((1, 0), 'off'),
-         
-        """{
-            'time': Time(7, 0),
-            'action': 'on',
-            'force': True
-        },
-        {
-            'time': Time(1, 0),
-            'action': 'off'
-        }"""
-   ])
-
-light.enable()
-
-def is_daylight():
-    now = dt.datetime.now()
-    start = now.replace(hour=7, minute=0, second=0)
-    end = (now + dt.timedelta(days=1)).replace(hour=1, minute=0, second=0)
-    if(start < now < end):
-        return True
+state = 'off'
+def toggle_relay(args=None):
+    global state
+    if(state is 'off'):
+        modules['esp8266'].devices['relay_3'].on()
+        state = 'on'
     else:
-        return False
+        modules['esp8266'].devices['relay_3'].off()
+        state = 'off'
 
-camera.start_timelapse(15*60, '/home/djolez/hydroponic/web-app/img/timelapse', check_func=is_daylight)
+modules ={}
 
-while(True):
-    a = 1
+mqtt_client = helper.make_mqtt_client(subscribe, on_module_register)
+
+"""pump = Device('pump')
+valve1 = Device('valve1')
+float_switch_up = Device('float_switch_up')
+
+float_switch_up.on_event.connect(pump.off)
+float_switch_up.on_event.connect(valve1.off)
+
+line1_on = [pump.on, valve1.on]
+on = dt.datetime.now() + dt.timedelta(seconds=5)
+
+all_actions = []
+#all_actions.append(Action('line1_on', time=Time(on.hour, on.minute, on.second), callbacks=line1_on))
+
+float_switch_up.on()
+
+for a in all_actions:
+    a.schedule()
+"""
+
+while True:
+    try:
+        sleep(0.1)
+    except KeyboardInterrupt:
+        logger.info('Exiting by user request')
+        
+        #for a in all_actions:
+        #    a.deschedule()
+        
+        sys.exit(0)
+
+
+
 
