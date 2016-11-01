@@ -25,8 +25,8 @@ class Module:
     def __del__(self):
         logger.debug('{} -- Deleting instance'.format(self))
 
-        for d in self.devices:
-            d.close_connection()
+        for name, device_obj in self.devices.items():
+            device_obj.close_connection()
 
     def add_device(self, d):
         self.devices[d.name] = d

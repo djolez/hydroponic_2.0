@@ -24,7 +24,10 @@ class OutputSimple(Device):
             super().read_response()
     
     def write(self, value):
-        write_value = -1
+        if(self.is_reverse):
+            value = 1 if value == 0 else 0
+        
+        '''write_value = -1
         
         if(value is 'on'):
             write_value = 0 if self.is_reverse else 1
@@ -33,5 +36,5 @@ class OutputSimple(Device):
         
         if(write_value == -1):
             logger.error('{} -- An error has occured while trying to write value'.format(self))
-            return
-        self.__pin_object.value(write_value)
+            return'''
+        self.__pin_object.value(value)

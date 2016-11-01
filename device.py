@@ -31,13 +31,6 @@ class Device:
     def __str__(self):
         return '[name: {}]'.format(self.name)
     
-    def read_response(self, client, usrdata, msg):
-        logger.debug('{} -- read_response -- {}'.format(self, msg.payload))
-
-    def interrupt(self, client, usrdata, msg):
-        logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
-        self.interrupt_event.send()
-
     def __on_mqtt_connect(self, client, userdata, flags, rc):
         logger.debug('{} -- MQTT connection established'.format(self))
         topic = '{}/device/{}'.format(self.parent_module_name, self.name) 
@@ -52,6 +45,19 @@ class Device:
         logger.debug('{} -- Sending message "{}"'.format(self, msg))
         msg['name'] = self.name
         self.__mqtt_client.publish('{}'.format(self.parent_module_name), json.dumps(msg))
+
+    def read(self):
+        self.__send_message({'action': 'read'})
+
+    def read_response(self, client, usrdata, msg):
+        logger.debug('{} -- read_response -- {}'.format(self, msg.payload))
+
+    def write(self, value):
+        self.__send_message({'action': 'write', 'value': value})
+
+    def interrupt(self, client, usrdata, msg):
+        logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
+        self.interrupt_event.send()
 
     def on(self, args=None):
         self.__send_message({'action': 'write', 'value': 'on'})

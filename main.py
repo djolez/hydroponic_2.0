@@ -40,10 +40,10 @@ state = 'off'
 def toggle_relay(args=None):
     global state
     if(state is 'off'):
-        modules['esp8266'].devices['relay_3'].on()
+        modules['esp8266'].devices['relay_3'].write(1)
         state = 'on'
     else:
-        modules['esp8266'].devices['relay_3'].off()
+        modules['esp8266'].devices['relay_3'].write(0)
         state = 'off'
 
 modules ={}
