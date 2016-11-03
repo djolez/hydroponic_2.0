@@ -42,9 +42,9 @@ def register_module():
 
 def initialize_devices():
     add_device(Ds18b20(10))
-    add_device(OutputSimple(3, name="relay"))
+    add_device(OutputSimple(15, name="relay", pwm_enabled=True))
     add_device(InputSimple(13, name='float_switch', trigger=InputSimple.trigger_type['any']))
-    add_device(InputSimple(15, 'button', trigger=InputSimple.trigger_type['off']))
+    add_device(InputSimple(3, 'button', trigger=InputSimple.trigger_type['off']))
 
     d = add_device(InputSimple(0, name='poten', is_analog=True))
     register_analog(d.name)

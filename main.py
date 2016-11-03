@@ -33,17 +33,22 @@ def on_module_register(client, usrdata, msg):
         
         modules['esp8266'].devices['float_switch_13'].interrupt_event.connect(toggle_relay)
 
+        modules['esp8266'].devices['poten_0'].interrupt_event.connect(pwm_relay)
+
     except ValueError:
         logger.error('Failed to parse payload as json')
+
+def pwm_relay(kurchina):
+    modules['esp8266'].devices['relay_15'].write(value=modules['esp8266'].devices['poten_0'].last_value)
 
 state = 'off'
 def toggle_relay(args=None):
     global state
     if(state is 'off'):
-        modules['esp8266'].devices['relay_3'].write(1)
+        modules['esp8266'].devices['relay_15'].write(1023)
         state = 'on'
     else:
-        modules['esp8266'].devices['relay_3'].write(0)
+        modules['esp8266'].devices['relay_15'].write(0)
         state = 'off'
 
 modules ={}

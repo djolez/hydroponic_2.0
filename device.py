@@ -18,6 +18,7 @@ class Device:
         self.name = name
         self.device_type = device_type
         self.parent_module_name = parent_module_name
+        self.last_value = None
         '''used for subscribing to device events'''
         self.on_event = signal(self.name + '_on')
         self.off_event = signal(self.name + '_off')
@@ -57,6 +58,8 @@ class Device:
 
     def interrupt(self, client, usrdata, msg):
         logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
+        data = json.loads(msg.payload.decode('utf-8'))
+        self.last_value = data['value']
         self.interrupt_event.send()
 
     def on(self, args=None):
