@@ -14,10 +14,13 @@ class OutputSimple(Device):
         super().__init__(pin, Device.types['out'], name)
         
         self.__pin_object = machine.Pin(pin, machine.Pin.OUT)
+        self.min_value = 0
+        self.max_value = 1
         self.is_reverse = is_reverse
         self.pwm_enabled = pwm_enabled 
         if(pwm_enabled):
             self.__pwm_object = machine.PWM(self.__pin_object, freq=1000)
+            self.max_value = 1023
         self.last_value = None
 
     def read(self, send_response=True):

@@ -28,12 +28,12 @@ def on_module_register(client, usrdata, msg):
 
         #modules[name].devices[1].off()
 
-        #a = Action('toggle', repeat=Time(second=3), callbacks=[toggle_relay])
+        #a = Action('read_all', repeat=Time(second=3), callbacks=[read_all])
         #a.schedule()
         
-        modules['esp8266'].devices['float_switch_13'].interrupt_event.connect(toggle_relay)
+        #modules['esp8266'].devices['float_switch_13'].interrupt_event.connect(toggle_relay)
 
-        modules['esp8266'].devices['poten_0'].interrupt_event.connect(pwm_relay)
+        #modules['esp8266'].devices['poten_0'].interrupt_event.connect(pwm_relay)
 
     except ValueError:
         logger.error('Failed to parse payload as json')
@@ -41,6 +41,10 @@ def on_module_register(client, usrdata, msg):
 def pwm_relay(kurchina):
     modules['esp8266'].devices['relay_15'].write(value=modules['esp8266'].devices['poten_0'].last_value)
 
+def read_all():
+    modules['esp8266'].devices['ds18b20_10'].read()
+    modules['esp8266'].devices['dht11_1'].read()
+    
 state = 'off'
 def toggle_relay(args=None):
     global state
@@ -73,7 +77,6 @@ float_switch_up.on()
 for a in all_actions:
     a.schedule()
 """
-
 while True:
     try:
         sleep(0.1)

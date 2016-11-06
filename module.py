@@ -17,7 +17,7 @@ class Module:
         self.devices = {}
 
         for d in devices:
-            self.add_device(Device(d['name'], d['device_type'], self.name))
+            self.add_device(Device(d['name'], d['device_type'], self.name, d['sub_devices']))
 
     def __str__(self):
         return '[name: {}]'.format(self.name)

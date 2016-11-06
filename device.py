@@ -14,11 +14,13 @@ logger = logging.getLogger(__name__)
 class Device:
     types = { 'in': 1, 'out': 2 }
 
-    def __init__(self, name, device_type, parent_module_name): 
+    def __init__(self, name, device_type, parent_module_name, sub_devices): 
         self.name = name
         self.device_type = device_type
         self.parent_module_name = parent_module_name
+        self.sub_devices = sub_devices
         self.last_value = None
+        
         '''used for subscribing to device events'''
         self.on_event = signal(self.name + '_on')
         self.off_event = signal(self.name + '_off')
@@ -42,6 +44,9 @@ class Device:
     def __on_mqtt_message(self, client, usrdata, msg):
         logger.debug('{} -- Received message -- {}'.format(self, msg.topic))
 
+    def close_connection(self):
+        self.__mqtt_client.disconnect()
+    
     def __send_message(self, msg):
         logger.debug('{} -- Sending message "{}"'.format(self, msg))
         msg['name'] = self.name
@@ -51,7 +56,8 @@ class Device:
         self.__send_message({'action': 'read'})
 
     def read_response(self, client, usrdata, msg):
-        logger.debug('{} -- read_response -- {}'.format(self, msg.payload))
+        data = json.loads(msg.payload.decode('utf-8'))
+        logger.debug('{} -- read_response -- {}'.format(self, data))
 
     def write(self, value):
         self.__send_message({'action': 'write', 'value': value})
@@ -59,19 +65,8 @@ class Device:
     def interrupt(self, client, usrdata, msg):
         logger.debug('{} -- interrupt -- {}'.format(self, msg.payload))
         data = json.loads(msg.payload.decode('utf-8'))
-        self.last_value = data['value']
+        self.last_value = data[self.name]
         self.interrupt_event.send()
-
-    def on(self, args=None):
-        self.__send_message({'action': 'write', 'value': 'on'})
-        self.on_event.send()
-
-    def off(self, args=None):
-        self.__send_message({'action': 'write', 'value': 'off'})
-        self.off_event.send()
-
-    def close_connection(self):
-        self.__mqtt_client.disconnect()
 
 class Action:
 

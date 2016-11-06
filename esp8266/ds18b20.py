@@ -16,14 +16,22 @@ class Ds18b20(Device):
         
         self.__pin_object = machine.Pin(pin)
         self.__ds_object = ds18x20.DS18X20(onewire.OneWire(self.__pin_object))
-        self.__ds_instance = self.__ds_object.scan()[0]
+        self.sub_devices = {}
+        for i, rom in enumerate(self.__ds_object.scan()):
+            self.sub_devices[str(i)] = {
+                    'name': rom,
+                    'min_value': -55,
+                    'max_value': 125
+            }
         self.last_value = None
 
     def read(self, send_response=True):
         logger.debug('{} -- Trying to read value'.format(self))
         self.__ds_object.convert_temp()
         time.sleep_ms(750)
-        self.last_value = self.__ds_object.read_temp(self.__ds_instance)
+        self.last_value = {}
+        for name, obj in self.sub_devices.items():
+            self.last_value[name] = self.__ds_object.read_temp(obj['name'])
         
         if(send_response):
             super().read_response()

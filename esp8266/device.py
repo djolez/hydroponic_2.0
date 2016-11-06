@@ -35,10 +35,19 @@ class Device:
         raise NotImplementedError
 
     def read_response(self):
-        self.__send_msg('read-response', {'value': self.last_value})
+        data = {}
+        data[self.name] = self.last_value
+        self.__send_msg('read-response', data)
 
     def write(self):
         raise NotImplementedError
 
     def interrupt(self):
-        self.__send_msg('interrupt', {'value': self.last_value})
+        data = {}
+        data[self.name] = self.last_value
+        self.__send_msg('interrupt', data)
+
+
+
+
+

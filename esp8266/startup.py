@@ -10,6 +10,7 @@ import mqtt_client
 from ds18b20 import Ds18b20
 from output_simple import OutputSimple
 from input_simple import InputSimple
+from dht11 import Dht11
 import common
 
 logging.basicConfig(level=logging.DEBUG)
@@ -36,15 +37,20 @@ def register_module():
     data['module_name'] = config.CONFIG['client_id']
 
     for name, device_object in devices.items():
-        data['devices'].append({'name': name, 'device_type': device_object.device_type})
+        data['devices'].append({
+            'name': name,
+            'device_type': device_object.device_type,
+            'sub_devices': device_object.sub_devices if hasattr(device_object, 'sub_devices') else None
+        })
 
     client.publish('main-dispatcher/register', ujson.dumps(data))
 
 def initialize_devices():
     add_device(Ds18b20(10))
+    add_device(Dht11(1))
     add_device(OutputSimple(15, name="relay", pwm_enabled=True))
     add_device(InputSimple(13, name='float_switch', trigger=InputSimple.trigger_type['any']))
-    add_device(InputSimple(3, 'button', trigger=InputSimple.trigger_type['off']))
+    add_device(InputSimple(3, name='button', trigger=InputSimple.trigger_type['off'], debounce_time=1000))
 
     d = add_device(InputSimple(0, name='poten', is_analog=True))
     register_analog(d.name)
