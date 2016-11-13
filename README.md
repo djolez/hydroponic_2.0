@@ -1,6 +1,6 @@
 # hydroponic_2.0
 
-This is a continuation of the project from the course of ***"Pervasive Systems 2016"*** that will be used as a Master thesis topic within the MSc in Computer Science at the ***Sapienza University of Rome***. Previous project can be found [here](https://github.com/djolez/hydroponic).
+This is a continuation of the project from the course of ***Pervasive Systems 2016*** that will be used as a Master thesis topic within the MSc in Computer Science at the ***Sapienza University of Rome***. Previous project can be found [here](https://github.com/djolez/hydroponic).
 
 Basic idea is to upgrade the old system in a way that is going to provide support for growing plants that require different growing conditions (nutrient strength, watering schedule, etc.) and automate the operation as much as possible (regulating pH and Electrical Conductivity levels, topping off nutrient solution and mixing nutrients). This will be achieved by making a multi site ebb and flow system, pictured below.
 
