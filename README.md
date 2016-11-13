@@ -12,6 +12,6 @@ Plants are organised in lines, where each line is used for plants that require t
 
 During the flooding period as the water level rises in the control bucket it also rises in the lines that are currently open. There are float switches that regulate min and max level of water in the control bucket, pumps for filling/draining and a solenoid valve for controlling each line.
 
-System will consist of multiple independent modules connected to a server that is going to be responsible for collecting and monitoring the data from sensors and controlling actuators located in these modules.
+System will consist of multiple independent modules connected wirelessly to a server that is going to be responsible for collecting and monitoring the data from sensors and controlling actuators located in these modules.
 
 This is the outline of the basic system functionality and this document will be updated as the project evolves.
