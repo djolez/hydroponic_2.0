@@ -14,4 +14,4 @@ During the flooding period as the water level rises in the control bucket it als
 
 System will consist of multiple independent modules connected to a server that is going to be responsible for collecting and monitoring the data from sensors and controlling actuators located in these modules.
 
-This is the outline of the system functionality and this document will be updated as the project evolves.
+This is the outline of the basic system functionality and this document will be updated as the project evolves.
