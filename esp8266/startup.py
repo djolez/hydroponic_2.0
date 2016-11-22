@@ -31,6 +31,12 @@ def on_message(topic, msg):
     except KeyError as e:
         logger.error('Message is missing field "{}"'.format(e))
 
+def get_sub_devices(s):
+    data = {}
+    for name, d in s.items():
+        data[name] = {'min_value': d['min_value'], 'max_value': d['max_value']}
+    return data
+
 def register_module():
     data = {}
     data['devices'] = []
@@ -40,20 +46,26 @@ def register_module():
         data['devices'].append({
             'name': name,
             'device_type': device_object.device_type,
-            'sub_devices': device_object.sub_devices if hasattr(device_object, 'sub_devices') else None
+            'sub_devices': get_sub_devices(device_object.sub_devices) if hasattr(device_object, 'sub_devices') else None
+            #'sub_devices': device_object.sub_devices if hasattr(device_object, 'sub_devices') else None
         })
-
-    client.publish('main-dispatcher/register', ujson.dumps(data))
+    s = ujson.dumps(data)
+    logger.debug(s)
+    client.publish('main-dispatcher/register', s)
+    #client.publish('main-dispatcher/register', ujson.dumps(data))
 
 def initialize_devices():
-    add_device(Ds18b20(10))
+    add_device(Ds18b20(5))
+    add_device(Dht11(10))
+    add_device(OutputSimple(4, name="relay"))
+    add_device(OutputSimple(14, name="fan", pwm_enabled=True))
+    '''add_device(Ds18b20(10))
     add_device(Dht11(1))
-    add_device(OutputSimple(15, name="relay", pwm_enabled=True))
     add_device(InputSimple(13, name='float_switch', trigger=InputSimple.trigger_type['any']))
     add_device(InputSimple(3, name='button', trigger=InputSimple.trigger_type['off'], debounce_time=1000))
 
     d = add_device(InputSimple(0, name='poten', is_analog=True))
-    register_analog(d.name)
+    register_analog(d.name)'''
 
 def register_analog(name):
     global analog

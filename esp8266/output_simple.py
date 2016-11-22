@@ -31,6 +31,7 @@ class OutputSimple(Device):
     
     def write(self, value):
         if(self.pwm_enabled):
+            print('here')
             self.__pwm_object.duty(value)
             return
         if(self.is_reverse):
