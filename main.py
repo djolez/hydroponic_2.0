@@ -41,7 +41,6 @@ def on_module_register(client, usrdata, msg):
         
         devices = data['devices'] if 'devices' in data else []
         MODULES[name] = Module(name, devices)
-        print('finished') 
     except ValueError:
         logger.error('Failed to parse payload as json')
 
