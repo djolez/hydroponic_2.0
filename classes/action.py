@@ -1,6 +1,6 @@
 import datetime as dt
 
-from schedule import *
+from classes.schedule import *
 
 class Action:
 

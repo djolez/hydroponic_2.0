@@ -2,8 +2,8 @@ import logging
 import copy
 import sys
 
-from sensor import *
-from device import *
+from classes.sensor import *
+from classes.device import *
 
 logger = logging.getLogger(__name__)
 

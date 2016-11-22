@@ -5,9 +5,9 @@ from blinker import signal
 import json
 import collections
 
-from schedule import *
-from time_module import *
 import helper
+from classes.schedule import *
+from classes.time_module import *
 
 logger = logging.getLogger(__name__)
 
@@ -52,32 +52,20 @@ class Device:
         self.__mqtt_client.disconnect()
     
     def __send_message(self, msg):
-        '''logger.debug('{} -- Sending message "{}"'.format(self, msg))'''
+        logger.debug('{} -- Sending message "{}"'.format(self, msg))
         msg['name'] = self.name
         self.__mqtt_client.publish('{}'.format(self.parent_module_name), json.dumps(msg))
 
     def read(self):
         self.__send_message({'action': 'read'})
     
-    OUTPUT_WIDTH = 50
-    OUTPUT_VAL_FIELD_SIZE = 4
-    '''def log_sensor_data(self, name, value, logger = logger.INFO):
-        
-        diff = self.OUTPUT_WIDTH - len(name) - self.OUTPUT_VAL_FIELD_SIZE
-        logger('{} ' + ('-' * diff) + ' {}').format(name, value))
-    '''
-
     def read_response(self, client, usrdata, msg):
         data = json.loads(msg.payload.decode('utf-8'))
         logger.debug('{} -- read_response -- {}'.format(self, data))
 
         for sensor_name, sub_values in data.items():
-            '''bottom_line = '|' + ('_' * (len(sensor_name) + 2)) + '|'
-            logger.info('| {} |\n{}'.format(sensor_name, bottom_line))'''
-            
             for n, v in sub_values.items():
                 v = round(v, 2)  
-                #self.log_sensor_data(n, v)
 
                 if(n == '0'):
                     logger.info('{} -------- {}'.format('bottom', v))
@@ -89,12 +77,6 @@ class Device:
                     logger.info('{} ----------- {}'.format('mid', v))
 
                 logger.info('')
-
-        '''>>>>>if(n is '0' or name is '1'):
-                    logger.info('\t\t{}: \t{}'.format(n, v))
-                else:
-                    logger.info('\t\t{}: \t\t{}'.format(n, v))
-                '''
 
         '''>>>>>for name, obj in data.items():
             if(self.is_multi_device):

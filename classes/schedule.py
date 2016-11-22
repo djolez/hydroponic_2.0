@@ -1,7 +1,7 @@
 import logging
 import threading
-from datetime import datetime
 import pprint
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class Schedule:
         #return '[name: {}, date_time: {}, callback: {}, args: {}, timer_obj: {}]'.format(self.name, self.date_time, self.callback.__name__, self.args, self.timer_obj)
 
     def start(self):
-        logger.debug('Setting timer for {}'.format(self))
+        '''logger.debug('Setting timer for {}'.format(self))'''
         now = datetime.now()
         
         #Accept only time that is ahead of now
