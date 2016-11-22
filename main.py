@@ -2,14 +2,29 @@ import logging
 from time import sleep
 import sys
 import json
+import datetime
 
-from module import *
-from time_module import *
 import helper
+from classes.module import *
 
-logging.basicConfig(level = logging.DEBUG, format='%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
+''' Everything is logged to a file '''
+logging.basicConfig(
+        level = logging.DEBUG,
+        format='%(asctime)s -- %(name)s -- %(levelname)s -- %(message)s',
+        datefmt='%d-%m-%Y %H:%M:%S',
+        filename='log/hydro.log')
+
+''' Log INFO and higher to console  '''
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logging.getLogger('').addHandler(console)
+
 logger = logging.getLogger(__name__)
 
+''' global vars '''
+MODULES = {}
+
+''' MQTT callbacks '''
 def subscribe(client, userdata, flags, rc):
     logger.debug('Client connected')
     client.subscribe('main-dispatcher/#')
@@ -18,76 +33,26 @@ def subscribe(client, userdata, flags, rc):
 def on_module_register(client, usrdata, msg):
     logger.debug('on_module_register -- {}'.format(msg.payload))
     try:
+        global MODULES
         data = json.loads(msg.payload.decode('utf-8'))
         name = data['module_name']
-        if(name in modules):
-            del modules[name]
+        if(name in MODULES):
+            del MODULES[name]
         
         devices = data['devices'] if 'devices' in data else []
-        modules[name] = Module(name, devices)
-
-        #modules[name].devices[1].off()
-
-        #a = Action('read_all', repeat=Time(second=3), callbacks=[read_all])
-        #a.schedule()
-        
-        #modules['esp8266'].devices['float_switch_13'].interrupt_event.connect(toggle_relay)
-
-        #modules['esp8266'].devices['poten_0'].interrupt_event.connect(pwm_relay)
-
+        MODULES[name] = Module(name, devices)
+        print('finished') 
     except ValueError:
         logger.error('Failed to parse payload as json')
 
-def pwm_relay(kurchina):
-    modules['esp8266'].devices['relay_15'].write(value=modules['esp8266'].devices['poten_0'].last_value)
-
-def read_all():
-    modules['esp8266'].devices['ds18b20_10'].read()
-    modules['esp8266'].devices['dht11_1'].read()
-    
-state = 'off'
-def toggle_relay(args=None):
-    global state
-    if(state is 'off'):
-        modules['esp8266'].devices['relay_15'].write(1023)
-        state = 'on'
-    else:
-        modules['esp8266'].devices['relay_15'].write(0)
-        state = 'off'
-
-modules ={}
+''' /MQTT callbacks '''
 
 mqtt_client = helper.make_mqtt_client(subscribe, on_module_register)
 
-"""pump = Device('pump')
-valve1 = Device('valve1')
-float_switch_up = Device('float_switch_up')
-
-float_switch_up.on_event.connect(pump.off)
-float_switch_up.on_event.connect(valve1.off)
-
-line1_on = [pump.on, valve1.on]
-on = dt.datetime.now() + dt.timedelta(seconds=5)
-
-all_actions = []
-#all_actions.append(Action('line1_on', time=Time(on.hour, on.minute, on.second), callbacks=line1_on))
-
-float_switch_up.on()
-
-for a in all_actions:
-    a.schedule()
-"""
 while True:
     try:
         sleep(0.1)
     except KeyboardInterrupt:
         logger.info('Exiting by user request')
         
-        #for a in all_actions:
-        #    a.deschedule()
-        
         sys.exit(0)
-
-
-
-
