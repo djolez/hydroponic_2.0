@@ -10,10 +10,10 @@ def wifi_connect():
     if not sta_if.isconnected():
         print('connecting to network...')
         sta_if.active(True)
-        sta_if.connect('Telecom-85285913', 'FearlessMoon-718')
+        sta_if.connect('...', '...')
         while not sta_if.isconnected():
             pass
-	webrepl.start(password='djole334')
+	webrepl.start(password='...')
     print('network config:', sta_if.ifconfig())
 	
 wifi_connect()
