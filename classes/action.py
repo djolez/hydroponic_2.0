@@ -20,7 +20,7 @@ class Action:
         #atexit.register(self.deschedule)
 
     def __str__(self):
-        return '[action: {} @ {}]'.format(self.name, self.time)
+        return '[action: {} @ {}]'.format(self.name, self.time or self.repeat)
 
     def schedule(self):
         
@@ -40,6 +40,8 @@ class Action:
             time = now + dt.timedelta(seconds=self.repeat.to_seconds())
         
         self.scheduler_object = Schedule(self.name, time, self.execute)
+
+        logger.debug('{} -- Scheduled'.format(self))
 
     def deschedule(self):
         if(self.scheduler_object is not None):

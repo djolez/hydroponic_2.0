@@ -2,7 +2,7 @@ import picamera
 import logging
 from time import sleep
 import datetime as dt
-from schedule import *
+#from schedule import *
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ DEFAULT_CONFIG = {
     'quality': 7
 }
 
-def take_picture(file_path, name_prefix='image', date_format='%Y-%m-%d@%H:%M:%S', config=None):
+def take_picture(file_path='img/', name_prefix='image', date_format='%Y-%m-%d@%H:%M:%S', config=None):
     
     if not file_path.endswith('/'):
         file_path += '/'
@@ -19,7 +19,7 @@ def take_picture(file_path, name_prefix='image', date_format='%Y-%m-%d@%H:%M:%S'
     with picamera.PiCamera() as camera:
         current_config = config if config != None else DEFAULT_CONFIG
         
-        for key, value in current_config.iteritems():
+        for key, value in current_config.items():
             #quality of the picture is set differently than other options
             if key != 'quality':
                 setattr(camera, key, value)
@@ -42,7 +42,7 @@ def take_picture(file_path, name_prefix='image', date_format='%Y-%m-%d@%H:%M:%S'
         except Exception as e:
             logger.exception('There was an exception while taking the picture')
 
-next_timelapse_schedule_obj = None
+'''next_timelapse_schedule_obj = None
 
 def __loop_timelapse(interval_in_sec, file_path, name_prefix, check_func):
     
@@ -68,7 +68,7 @@ def stop_timelapse():
     if next_timelapse_schedule_obj != None:
         next_timelapse_schedule_obj.stop()
         next_timelapse_schedule_obj = None
-
+'''
 
 
 
