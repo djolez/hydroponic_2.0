@@ -19,6 +19,14 @@ def take_picture(file_path='img/', name_prefix='image', date_format='%Y-%m-%d@%H
     with picamera.PiCamera() as camera:
         current_config = config if config != None else DEFAULT_CONFIG
         
+        for key, value in DEFAULT_CONFIG.items():
+            #quality of the picture is set differently than other options
+            if key != 'quality':
+                setattr(camera, key, value)
+            else:
+                picture_quality = value
+
+
         for key, value in current_config.items():
             #quality of the picture is set differently than other options
             if key != 'quality':
@@ -41,35 +49,3 @@ def take_picture(file_path='img/', name_prefix='image', date_format='%Y-%m-%d@%H
             return file_name
         except Exception as e:
             logger.exception('There was an exception while taking the picture')
-
-'''next_timelapse_schedule_obj = None
-
-def __loop_timelapse(interval_in_sec, file_path, name_prefix, check_func):
-    
-    if(check_func != None):
-        if(check_func()):
-            take_picture(file_path, name_prefix)
-    else:
-        take_picture(file_path, name_prefix)
-
-    next_time = dt.datetime.now() + dt.timedelta(seconds=interval_in_sec)
-    
-    global next_timelapse_schedule_obj
-    next_timelapse_schedule_obj = Schedule('timelapse_photo', next_time, __loop_timelapse, [interval_in_sec, file_path, name_prefix, check_func])
-
-
-#check_func is a callback function that returns
-#a boolean whether a pic should be taken or not
-def start_timelapse(interval_in_sec, file_path, name_prefix='timelapse', check_func=None):
-    __loop_timelapse(interval_in_sec, file_path, name_prefix, check_func)
-
-def stop_timelapse():
-    global next_timelapse_schedule_obj
-    if next_timelapse_schedule_obj != None:
-        next_timelapse_schedule_obj.stop()
-        next_timelapse_schedule_obj = None
-'''
-
-
-
-
